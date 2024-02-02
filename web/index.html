@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Рекомендация поэзии</title>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap" rel="stylesheet">
+
+	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+</head>
+
+<body>
+	<header>
+		<h2>Поиск поэзии</h2>
+	</header>
+
+	<div class="request-bar">
+		<p class="help">Опишите на что должен быть похож стих который вы хотите найти, можете указать желаемую эпоху, поэта или объем.</p>
+		<textarea id="prompt" placeholder="Запрос..."></textarea>
+		<button id="search">Искать →</button>
+		<hr style="width: 100%; margin-top: 35px;">
+	</div>
+
+
+	<div id="result">
+		<h3 class="name">Имя стихотворения Имя стихотворения Имя стихотворения</h3>
+		<div class="poem">
+			<p class="poem-text">
+				Злою мглою нега кроет <br>
+				вихри снежные крутя <br>
+				ну а мы асфальт положим <br>
+				охуенно сука бля
+			</p>
+			<p class="year">1755 - 1757</p>
+			<p class="author">Александр Пушкин</p>
+		</div>
+		
+		<hr>
+		
+		<h3 class="name">Имя стихотворения</h3>
+		<div class="poem">
+			<p class="poem-text">
+				Злою мглою нега кроет <br>
+				вихри снежные крутя <br>
+				ну а мы асфальт положим <br>
+				охуенно сука бля
+			</p>
+			<p class="year">1755 - 1757</p>
+			<p class="author">Александр Пушкин</p>
+		</div>
+	</div>
+</body>
+
+<script>
+
+$('#search').on("click", function() {
+	var serverUrl = "https://ba97-91-135-222-29.ngrok-free.app/process_data";
+
+	// todo enter or button
+	$.ajax({
+		type: "POST",
+		url: serverUrl,
+		contentType: "application/json",  
+		data: JSON.stringify({ request: $('#prompt').val() }),  
+		success: function(response) {
+			console.log(response);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+});
+
+</script>
+
+<style>
+
+:root {
+	--light: #f3f3f3;
+	--dark: #323232;
+
+}
+
+* {
+	font-family: 'Roboto Slab', serif;
+}
+
+body {
+	/* padding-inline: 30%; */
+	margin: 0;
+
+	background: var(--light);
+	/* background: #f3e5dd; */
+	/* background: floralwhite; */
+}
+
+h2 {
+	text-align: center;
+	margin-block: 30px;
+}
+
+.help {
+	font-size: medium;
+	color: gray;
+	padding: 10px;
+}
+
+.request-bar {
+	margin: auto;
+	width: 75vmin;
+}
+
+#prompt {
+	width: calc(100% - 28px);
+	max-width: calc(100% - 28px);
+	min-width: calc(100% - 28px);
+	height: 70px;
+
+    border-inline: 0;
+    border: 5px solid var(--dark);
+	border-radius: 20px;
+	box-shadow: 0px 8px 30px 0px #0000004d,
+				0px 0px 30px 0px #03a9f400;
+
+	background: var(--light);
+	
+	font-weight: bold;
+	font-size: 24px;
+
+	padding: 15px;
+
+	transition: 0.2s;
+}
+#prompt:hover {
+	box-shadow: 0px 5px 40px 0px #00000060,
+				0px 0px 40px 0px #03a9f420;	
+}
+#prompt:focus-visible {
+	outline: 0;
+	box-shadow: 0px 5px 40px 0px #00000060,
+				0px 0px 30px 0px #03a9f435;
+	border: 5px solid #012e53;
+}
+
+hr {
+	width: 100px;
+	margin-block: 50px;
+	border-color: #000;
+}
+
+#result {
+	margin-top: 50px;
+
+}
+
+.poem {
+	width: max-content;
+	margin-inline: auto;
+}
+
+.name {
+	max-width: 100%;
+	text-align: center;
+}
+
+.year {
+	font-size: 13px;
+	margin-bottom: 0px;
+}
+
+.author {
+	font-size: 13px;
+	margin-top: 0px;
+}
+
+#search {
+	margin-top: 20px;
+	padding: 10px 50px;
+	border: 0;
+	border-radius: 15px;
+	box-shadow: 0px 8px 30px 0px #0000004d,
+				0px 0px 30px 0px #03a9f400;
+	border: 4px solid var(--dark);
+
+	background: #525252;
+	color: var(--light);
+	
+	font-size: 18px;
+
+	transition: 0.2s;
+}
+#search:hover {
+	background: #4c6e89;
+	box-shadow: 0px 5px 40px 0px #00000060,
+				0px 0px 30px 0px #03a9f435;
+}
+#search:active {
+	transform: translate(0, 5%);
+}
+
+</style>
+
+</html>
