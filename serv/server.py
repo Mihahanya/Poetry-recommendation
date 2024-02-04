@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 from flask_cors import CORS
 from poem_search import *
 
@@ -7,13 +7,9 @@ CORS(app, resources={r"/process_data": {"origins": "*"}})
 
 @app.route('/process_data', methods=['POST'])
 def process_data():
-    data = request.json 
-    if 'request' in data:
-        result = search(data['request'])
-        return jsonify(result)
-    
-    return jsonify({'status': 'error'})
-    
+    result_data = search_poems()
+    return jsonify(result_data)
+
 @app.route("/")
 def index():
     return "<h1>Hello!</h1>"

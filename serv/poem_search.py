@@ -1,7 +1,7 @@
 import pandas as pd
 
-df = pd.read_csv('../poetry_data_prepared.csv')
+df = pd.read_pickle('D:/PROJECTS/Poetry-recommendation/poetry_data_prepared.pkl')
 
-def search(request):
-	return df.to_dict(orient='records')[0]
+def search_poems():
+    return df.loc[:10, ['name', 'text', 'author', 'date']].to_dict(orient='records')
 

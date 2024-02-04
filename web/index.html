@@ -9,7 +9,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap" rel="stylesheet">
 
-	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 </head>
 
@@ -27,38 +27,31 @@
 
 
 	<div id="result">
-		<h3 class="name">Имя стихотворения Имя стихотворения Имя стихотворения</h3>
-		<div class="poem">
-			<p class="poem-text">
-				Злою мглою нега кроет <br>
-				вихри снежные крутя <br>
-				ну а мы асфальт положим <br>
-				охуенно сука бля
-			</p>
-			<p class="year">1755 - 1757</p>
-			<p class="author">Александр Пушкин</p>
-		</div>
-		
-		<hr>
-		
-		<h3 class="name">Имя стихотворения</h3>
-		<div class="poem">
-			<p class="poem-text">
-				Злою мглою нега кроет <br>
-				вихри снежные крутя <br>
-				ну а мы асфальт положим <br>
-				охуенно сука бля
-			</p>
-			<p class="year">1755 - 1757</p>
-			<p class="author">Александр Пушкин</p>
-		</div>
+		<h1 class="alert">Результаты поиска <br> появятся здесь...</h1>
 	</div>
 </body>
 
 <script>
 
+function html_poem_template(name, text, year, author) {
+	var res = `<h3 class="name">${name}</h3>
+		<div class="poem">
+			<p class="poem-text">
+				${text.replaceAll('\n', '<br>')}
+			</p>`
+
+	if (year > 0) res += `<p class="year">${year}</p>`
+
+	res += `<p class="author">${author}</p>
+		</div>
+		<hr>`
+	
+	return res
+}
+
 $('#search').on("click", function() {
-	var serverUrl = "https://ba97-91-135-222-29.ngrok-free.app/process_data";
+	var serverUrl = "https://31d1-91-135-222-29.ngrok-free.app/process_data";
+	$('#result').fadeOut('slow')
 
 	// todo enter or button
 	$.ajax({
@@ -67,10 +60,18 @@ $('#search').on("click", function() {
 		contentType: "application/json",  
 		data: JSON.stringify({ request: $('#prompt').val() }),  
 		success: function(response) {
-			console.log(response);
+			console.log(response)
+			var inner_text = ''
+			for (const poem_data of response) {
+				inner_text += html_poem_template(poem_data.name, poem_data.text, poem_data.date, poem_data.author)
+			}
+			$('#result').fadeIn('slow')
+			$('#result').html(inner_text)
 		},
 		error: function(error) {
-			console.log(error);
+			console.log('bebe', error);
+			$('#result').fadeIn('slow')
+			$('#result').html('<h1 class="alert">Кажется, сервер <br> сейчас недоступен...</h1>')
 		}
 	});
 });
@@ -101,6 +102,11 @@ body {
 h2 {
 	text-align: center;
 	margin-block: 30px;
+}
+
+.alert {
+	text-align: center; 
+	color: gray;
 }
 
 .help {
