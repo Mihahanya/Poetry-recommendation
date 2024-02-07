@@ -19,9 +19,15 @@
 	</header>
 
 	<div class="request-bar">
-		<p class="help">Опишите на что должен быть похож стих который вы хотите найти, можете указать желаемую эпоху, поэта или объем.</p>
+		<p class="help">Опишите на что должен быть похож стих который вы хотите найти, можете указать желаемого автора, объем или эпоху.</p>
 		<textarea id="prompt" placeholder="Запрос..."></textarea>
-		<button id="search">Искать →</button>
+		<div class="formm">
+			<p> <strong>Приоритет поиска: </strong> <font style="font-style: italic; font-size: 15px;">образность
+				<input class="coef" id="priority" type="range" min="0" max="100" id="size" value="20"> характеристики </font>
+			</p>
+
+			<button id="search">Искать →</button>
+		</div>
 		<hr style="width: 100%; margin-top: 35px;">
 	</div>
 
@@ -50,7 +56,8 @@ function html_poem_template(name, text, year, author) {
 }
 
 $('#search').on("click", function() {
-	var serverUrl = "https://31d1-91-135-222-29.ngrok-free.app/process_data";
+	var serverUrl = "https://bd3d-91-135-222-29.ngrok-free.app/poem_request";
+	//var serverUrl = "https://127.0.0.1:8080/poem_request";
 	$('#result').fadeOut('slow')
 
 	// todo enter or button
@@ -58,7 +65,11 @@ $('#search').on("click", function() {
 		type: "POST",
 		url: serverUrl,
 		contentType: "application/json",  
-		data: JSON.stringify({ request: $('#prompt').val() }),  
+		data: JSON.stringify({ 
+			request_text: $('#prompt').val(), 
+			top_n: 10, 
+			search_priority: $('#priority').val()/100
+		}),  
 		success: function(response) {
 			console.log(response)
 			var inner_text = ''
@@ -69,7 +80,6 @@ $('#search').on("click", function() {
 			$('#result').html(inner_text)
 		},
 		error: function(error) {
-			console.log('bebe', error);
 			$('#result').fadeIn('slow')
 			$('#result').html('<h1 class="alert">Кажется, сервер <br> сейчас недоступен...</h1>')
 		}
@@ -104,6 +114,24 @@ h2 {
 	margin-block: 30px;
 }
 
+.coef {
+	margin: 0px 5px;
+    transform: translateY(3px);
+    -webkit-appearance: none;
+    border-radius: 104px;
+    background: #8d8f91;
+    box-shadow: 0 0 0px 4px #cdcdcd;
+}
+.coef::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #135992;
+  cursor: pointer;
+}
+
 .alert {
 	text-align: center; 
 	color: gray;
@@ -113,6 +141,13 @@ h2 {
 	font-size: medium;
 	color: gray;
 	padding: 10px;
+}
+
+.formm {
+	display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
 }
 
 .request-bar {
