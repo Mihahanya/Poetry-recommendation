@@ -15,11 +15,11 @@
 
 <body>
 	<header>
-		<h2>Поиск поэзии</h2>
+		<h2>Поиск поэзии по образу и подобию</h2>
 	</header>
 
 	<div class="request-bar">
-		<p class="help">Опишите на что должен быть похож стих который вы хотите найти, можете указать желаемого автора, объем или эпоху.</p>
+		<p class="help">Опишите на что должно быть похоже стихотворение, который вы хотите найти, можете указать следующие <font style="font-style: italic;">характеристики</font>: желаемого автора, объем или эпоху.</p>
 		<textarea id="prompt" placeholder="Запрос..."></textarea>
 		<div class="formm">
 			<p> <strong>Приоритет поиска: </strong> <font style="font-style: italic; font-size: 15px;">образность
@@ -55,35 +55,43 @@ function html_poem_template(name, text, year, author) {
 	return res
 }
 
-$('#search').on("click", function() {
-	var serverUrl = "https://bd3d-91-135-222-29.ngrok-free.app/poem_request";
-	//var serverUrl = "https://127.0.0.1:8080/poem_request";
-	$('#result').fadeOut('slow')
+var serverUrl = "https://0433-91-135-222-29.ngrok-free.app/poem_request";
+//var serverUrl = "https://127.0.0.1:8080/poem_request";
 
-	// todo enter or button
-	$.ajax({
-		type: "POST",
-		url: serverUrl,
-		contentType: "application/json",  
-		data: JSON.stringify({ 
-			request_text: $('#prompt').val(), 
-			top_n: 10, 
-			search_priority: $('#priority').val()/100
-		}),  
-		success: function(response) {
-			console.log(response)
-			var inner_text = ''
-			for (const poem_data of response) {
-				inner_text += html_poem_template(poem_data.name, poem_data.text, poem_data.date, poem_data.author)
+var prev_val = ''
+
+$('#search').on("click", function() {
+	var inp = $('#prompt').val().substr(0, 1000)
+
+	if (inp != prev_val) {
+		$('#result').fadeOut('slow')
+
+		$.ajax({
+			type: "POST",
+			url: serverUrl,
+			contentType: "application/json",  
+			data: JSON.stringify({ 
+				request_text: inp, 
+				top_n: 33, 
+				search_priority: 0.05 + (1-$('#priority').val()/100)*0.9
+			}),  
+			success: function(response) {
+				console.log(response)
+				var inner_text = ''
+				for (const poem_data of response) {
+					inner_text += html_poem_template(poem_data.name, poem_data.text, poem_data.date, poem_data.author)
+				}
+				$('#result').fadeIn('slow')
+				$('#result').html(inner_text)
+			},
+			error: function(error) {
+				$('#result').fadeIn('slow')
+				$('#result').html('<h1 class="alert">Кажется, сервер <br> сейчас недоступен...</h1>')
 			}
-			$('#result').fadeIn('slow')
-			$('#result').html(inner_text)
-		},
-		error: function(error) {
-			$('#result').fadeIn('slow')
-			$('#result').html('<h1 class="alert">Кажется, сервер <br> сейчас недоступен...</h1>')
-		}
-	});
+		});
+
+		prev_val = inp
+	}
 });
 
 </script>

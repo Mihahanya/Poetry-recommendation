@@ -21,7 +21,13 @@ model = SentenceTransformer('sentence-transformers/distiluse-base-multilingual-c
 #model = SentenceTransformer('sentence-transformers/LaBSE', device=device)
 
 def to_embeddings(input_text):
-    text_chunks = input_text
+    tokens_count = model.tokenize(input_text)['input_ids'].shape[0]
+    chunks_n = math.ceil(tokens_count / model.max_seq_length)
+
+    step = math.ceil(len(input_text) / chunks_n)
+
+    text_chunks = [input_text[i:i+step] for i in range(0, len(input_text), step)]
+    
     embeddings = model.encode(text_chunks)
     return embeddings
 
@@ -29,21 +35,22 @@ def to_embeddings(input_text):
 
 qa_model = pipeline("question-answering", "timpal0l/mdeberta-v3-base-squad2")
 
-def get_normal_sentence(text):
+def get_normal_sentence(text, norm=True):
 	morph = MorphAnalyzer()
 	words = re.findall(r'\b\w+\b', text.lower())
+
+	if not norm: return ' '.join(words)
+	
 	lemmatized_words = [morph.parse(word)[0].normal_form for word in words]
+	
 	return ' '.join(lemmatized_words)
 
 def extract_metadata(request):
 	r = qa_model(question=[
-		# 'упомянутое количество строк или четверостиший или слов', 
-		# 'упомянутое авторство', 
-		# 'упомянутая эпоха или упомянутый век или год'
 		'Какой объем?', 
-		'Кто авторы или автор или упомянут?', 
+		'Кто авторы или автор упомянут?', 
 		'Какой век или год или эпоха?'
-		], context=get_normal_sentence(request)) 
+		], context=request) 
 	
 	rs = ['length', 'author', 'date']
 
@@ -52,9 +59,9 @@ def extract_metadata(request):
 
 def to_standard(data):
 	r = ''
-	if data['length']['score'] > 0.01: r += f'объем: {get_normal_sentence(data['length']['answer'])}; '
-	if data['author']['score'] > 0.01: r += f'автор: {get_normal_sentence(data['author']['answer'])}; '
-	if data['date']['score'] > 0.01: r += f'временной период: {get_normal_sentence(data['date']['answer'])}'
+	if data['length']['score'] > 0.02: r += f'объем: {get_normal_sentence(data['length']['answer'], norm=False)}; '
+	if data['author']['score'] > 0.02: r += f'автор: {get_normal_sentence(data['author']['answer'])}; '
+	if data['date']['score'] > 0.02: r += f'временной период: {get_normal_sentence(data['date']['answer'])}'
 	return r
 
 #
@@ -69,10 +76,10 @@ def best_similarity(req_emb, text_embs):
 def search_poems(request, top_n=10, search_priority=0.5):
 	mentioned_parameters = extract_metadata(request)
 	standard_params_text = to_standard(mentioned_parameters) + ' '
-	req_params_emb = to_embeddings(standard_params_text)
+	req_params_emb = to_embeddings(standard_params_text)[0]
 	if len(standard_params_text) < 14: search_priority = 1
 	
-	req_emb = to_embeddings(request)
+	req_emb = to_embeddings(request)[0]
 	texts_datas = []
 
 	for index, row in df.iterrows():
@@ -83,7 +90,7 @@ def search_poems(request, top_n=10, search_priority=0.5):
 		
 		texts_datas.append({'score': score, 'text_sim': text_sim, 'req_sim': req_sim, 
 			**{k: v for k, v in row.items() if k != 'metadata_embedding' and k != 'text_embedding'}})
-	
+
 	texts_datas.sort(key=lambda x: x['score'])
 
 	return texts_datas[-top_n:][::-1]
