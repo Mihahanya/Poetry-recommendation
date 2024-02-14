@@ -15,11 +15,11 @@
 
 <body>
 	<header>
-		<h2>Поиск поэзии по образу и подобию</h2>
+		<h2>- Поиск поэзии -</h2>
 	</header>
 
 	<div class="request-bar">
-		<p class="help">Опишите на что должно быть похоже стихотворение, который вы хотите найти, можете указать следующие <font style="font-style: italic;">характеристики</font>: желаемого автора, объем или эпоху.</p>
+		<p class="help">Опишите на что должно быть похоже стихотворение, которое вы хотите найти, можете указать следующие <font style="font-style: italic;">характеристики</font>: желаемого автора, объем или эпоху.</p>
 		<textarea id="prompt" placeholder="Запрос..."></textarea>
 		<div class="formm">
 			<p> <strong>Приоритет поиска: </strong> <font style="font-style: italic; font-size: 15px;">образность
@@ -55,15 +55,17 @@ function html_poem_template(name, text, year, author) {
 	return res
 }
 
-var serverUrl = "https://0433-91-135-222-29.ngrok-free.app/poem_request";
-//var serverUrl = "https://127.0.0.1:8080/poem_request";
+var serverUrl = "https://ef3c-91-135-222-29.ngrok-free.app/poem_request";
+// var serverUrl = "https://127.0.0.1:8080/poem_request";
 
-var prev_val = ''
+var prev_req = ''
+var prev_priority = 0.7
 
 $('#search').on("click", function() {
 	var inp = $('#prompt').val().substr(0, 1000)
+	var priority = 0.05 + (1-$('#priority').val()/100)*0.9
 
-	if (inp != prev_val) {
+	if (inp != prev_req || priority != prev_priority) {
 		$('#result').fadeOut('slow')
 
 		$.ajax({
@@ -72,8 +74,8 @@ $('#search').on("click", function() {
 			contentType: "application/json",  
 			data: JSON.stringify({ 
 				request_text: inp, 
-				top_n: 33, 
-				search_priority: 0.05 + (1-$('#priority').val()/100)*0.9
+				top_n: 50, 
+				search_priority: priority
 			}),  
 			success: function(response) {
 				console.log(response)
@@ -90,7 +92,8 @@ $('#search').on("click", function() {
 			}
 		});
 
-		prev_val = inp
+		prev_req = inp
+		prev_priority = priority
 	}
 });
 

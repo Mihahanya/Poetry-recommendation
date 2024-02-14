@@ -87,6 +87,7 @@ def search_poems(request, top_n=10, search_priority=0.5):
 		req_sim = cosine_similarity(req_params_emb, row['metadata_embedding'])
 		
 		score = text_sim * search_priority + req_sim * (1-search_priority)
+		if row['profanity']: score = -1
 		
 		texts_datas.append({'score': score, 'text_sim': text_sim, 'req_sim': req_sim, 
 			**{k: v for k, v in row.items() if k != 'metadata_embedding' and k != 'text_embedding'}})
@@ -94,7 +95,3 @@ def search_poems(request, top_n=10, search_priority=0.5):
 	texts_datas.sort(key=lambda x: x['score'])
 
 	return texts_datas[-top_n:][::-1]
-
-#def search_poems():
-#    return df.loc[:10, ['name', 'text', 'author', 'date']].to_dict(orient='records')
-
